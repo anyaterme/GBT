@@ -1,0 +1,90 @@
+Filename: AGBT10B_045_01.raw.dcr.fits
+No.    Name         Type      Cards   Dimensions   Format
+0    PRIMARY     PrimaryHDU      12   ()              
+1    SINGLE DISH  BinTableHDU    199   179672R x 60C   [32A, 1D, 22A, 1D, 1D, 1D, 1E, 16A, 6A, 8A, 1D, 4A, 1D, 4A, 1D, 1I, 32A, 32A, 1J, 32A, 16A, 1E, 1D, 1D, 1D, 1D, 1D, 1D, 1D, 1D, 8A, 1D, 1D, 12A, 1I, 1I, 1D, 1D, 1I, 1A, 1I, 1I, 16A, 16A, 1J, 1J, 22A, 1D, 1D, 1I, 1A, 1A, 1A, 8A, 1E, 1E, 16A, 1I, 1I, 1I]   
+None
+SIMPLE  =                    T / file does conform to FITS standard             BITPIX  =                    8 / number of bits per data pixel                  NAXIS   =                    0 / number of data axes                            EXTEND  =                    T / FITS dataset may contain extensions            COMMENT   FITS (Flexible Image Transport System) format is defined in 'AstronomyCOMMENT   and Astrophysics', volume 376, page 359; bibcode: 2001A&A...376..359H DATE    = '2017-03-01T03:24:19' / date and time this HDU was created            ORIGIN  = 'NRAO Green Bank'    / origin of observation                          TELESCOP= 'NRAO_GBT'           / the telescope used                             INSTRUME= 'DCR     '           / backend                                        SDFITVER= 'sdfits ver1.21'     / this file was created by sdfits                FITSVER = '1.9     '           / FITS definition version                        END                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+Filename: AGBT10B_045_01.raw.acs.fits
+No.    Name         Type      Cards   Dimensions   Format
+0    PRIMARY     PrimaryHDU      12   ()              
+1    SINGLE DISH  BinTableHDU    229   158032R x 70C   [32A, 1D, 22A, 1D, 1D, 1D, 8192E, 16A, 6A, 8A, 1D, 1D, 1D, 4A, 1D, 4A, 1D, 1I, 32A, 32A, 1J, 32A, 16A, 1E, 8A, 1D, 1D, 1D, 1D, 1D, 1D, 1D, 1D, 1D, 1D, 1D, 1D, 8A, 1D, 1D, 12A, 1I, 1I, 1D, 1D, 1I, 1A, 1I, 1I, 16A, 16A, 1J, 1J, 22A, 1D, 1D, 1I, 1A, 1D, 1E, 1D, 1A, 1A, 8A, 1E, 1E, 16A, 1I, 1I, 1I]   
+None
+XTENSION => binary table extension
+BITPIX => 8-bit bytes
+NAXIS => 2-dimensional binary table
+NAXIS1 => width of table in bytes
+NAXIS2 => number of rows in table
+PCOUNT => size of special data area
+GCOUNT => one data group (required keyword)
+TFIELDS => number of fields in each row
+TTYPE1 => name of source observed
+TELESCOP => the telescope used
+TTYPE2 => bandwidth
+TTYPE3 => date and time of observation start
+TTYPE4 => total integration duration in seconds
+TTYPE5 => effective int time (excludes blanking) in secs
+TTYPE6 => system temperature in Kelvin
+TTYPE7 => actual data
+TTYPE8 => data dimensions of the array
+TTYPE10 => first data axis is frequency-like
+TTYPE14 => second axis is longitude-like
+TTYPE16 => third axis is latitude-like
+CTYPE4 => fourth axis is Stokes
+TTYPE19 => name of observer(s)
+TTYPE20 => observation description
+PROJID => project identifier
+TTYPE21 => scan number
+TTYPE22 => observing mode
+TTYPE23 => frontend device
+BACKEND => backend device
+TTYPE24 => calibration temperature
+TTYPE25 => velocity definition and frame
+TTYPE26 => radial velocity of the reference frame
+TTYPE27 => radial velocity, Vsource - Vtelescope
+TTYPE28 => observed center frequency
+TTYPE29 => LST at midpoint of integration/scan
+TTYPE30 => azimuth
+TTYPE31 => elevation
+TTYPE32 => ambient temperature
+TTYPE33 => ambient pressure
+TTYPE34 => relative humidity
+SITELONG => E. longitude of intersection of the az/el axes
+SITELAT => N. latitude of intersection of the az/el axes
+SITEELEV => height of the intersection of az/el axes
+TTYPE35 => rest frequency at band center
+TTYPE36 => frequency resolution
+TTYPE37 => equinox of selected coordinate reference frame
+TTYPE38 => Equitorial coordinate system name
+TTYPE39 => target longitude in coord. ref. frame
+TTYPE40 => target latitude in coord. ref. frame
+TTYPE41 => sampler description (e.g., "A1" or "A1xA3"
+TTYPE42 => (signal) feed number
+TTYPE43 => reference feed number
+TTYPE44 => feed XEL offset
+TTYPE45 => feed EL offset
+TTYPE46 => subreflector state (1,0,-1) - 0=moving
+TTYPE47 => resulting sideband ('U'pper or 'L'ower)
+TTYPE48 => scan sequence number
+TTYPE49 => number of scans in procedure
+TTYPE50 => scan's role in the procedure
+TTYPE51 => type of the procedure
+TTYPE52 => last 'on' for position switching
+TTYPE53 => last 'off' for position switching
+TTYPE54 => date and time of scan start
+TTYPE55 => QuadrantDetector cross-elevation offset
+TTYPE56 => QuadrantDetector elevation offset
+TTYPE57 => QuadrantDetector flag: 0=good,1=bad
+TTYPE58 => Quad. Det. method A,B,C. Blank indicates none.
+TTYPE59 => line velocity in rest frame
+TTYPE60 => zero channel
+TTYPE61 => Doppler tracked frequency
+TTYPE62 => signal is true, reference is false
+TTYPE63 => cal ON is true, cal OFF is false
+TTYPE64 => LOW or HIGH, may eventually be other types
+TTYPE65 => 4mm RX ambient load temp (K)
+TTYPE66 => 4mm RX cold load temp (K)
+TTYPE67 => 4mm RX table position
+TTYPE68 => Spectral window (IF) number
+TTYPE69 => Polarization number
+TTYPE70 => Feed number
+EXTNAME => name of this binary table extension
