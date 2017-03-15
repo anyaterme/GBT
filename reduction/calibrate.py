@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 import numpy as np
-from astropy.io import fits
+#from astropy.io import fits
+import pyfits as fits
 import astropy.units as u
 import matplotlib.pyplot as plt
 T_AMB = 31
@@ -22,19 +23,26 @@ columns = hdu.columns
 data = hdu.data
 hdulist.close()
 
-objects = data.field('OBJECT')
-unique,counts=np.unique(objects, return_counts=True)
-objects = dict(zip(unique, counts))
-for object_name in objects.keys():
-    print object_name
+scans = data.field('SCAN')
+scans_keys,counts=np.unique(scans, return_counts=True)
 
-#print data
-#
-#scans = data.field('SCAN')
-#scans_aux = data[np.where(data.field('SCAN') == 11)]
-#print scans_aux
-#unique,counts=np.unique(scans, return_counts=True)
-#print dict(zip(unique, counts))
+summary = []
+for scan in scans_keys:
+    #scans_aux = data[np.where(data.field('SCAN') == 11)]
+    objects_in_scan = data[np.where(data.field('SCAN') == scan)]
+    objects_key, counts = np.unique(objects_in_scan.field('OBJECT'), return_counts=True)
+    for object_key in objects_key:
+        summary.append("%d\t\t%s" % (scan, object_key))
+
+for line in summary:
+    print line
+
+#objects = data.field('OBJECT')
+#unique,counts=np.unique(objects, return_counts=True)
+#objects = dict(zip(unique, counts))
+#for object_name in objects.keys():
+#    print object_name
+
 
 
 
