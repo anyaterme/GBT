@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 import numpy as np
-#from astropy.io import fits
-import pyfits as fits
+import time
+from astropy.io import fits
 import astropy.units as u
 import matplotlib.pyplot as plt
 T_AMB = 31
@@ -14,34 +14,46 @@ filename = "AGBT10B_045_01.raw"
 
 
 
-hdulist = fits.open("%s/%s.dcr.fits" % (DATA_PATH, filename))
-hdulist.close()
+#hdulist = fits.open("%s/%s.dcr.fits" % (DATA_PATH, filename))
+#hdulist.close()
 
-hdulist = fits.open("%s/%s.acs.fits" % (DATA_PATH, filename))
-hdu = hdulist[1]
-columns = hdu.columns
-data = hdu.data
-hdulist.close()
 
-scans = data.field('SCAN')
-scans_keys,counts=np.unique(scans, return_counts=True)
+class fit_file:
+    def __init__(self, path):
+        self.path = path
+        hdulist = fits.open(path)
+        hdu = hdulist[1]
+        self.data = hdu.data
+        hdulist.close()
 
-summary = []
-for scan in scans_keys:
-    #scans_aux = data[np.where(data.field('SCAN') == 11)]
-    objects_in_scan = data[np.where(data.field('SCAN') == scan)]
-    objects_key, counts = np.unique(objects_in_scan.field('OBJECT'), return_counts=True)
-    for object_key in objects_key:
-        summary.append("%d\t\t%s" % (scan, object_key))
+        scans = self.data.field('SCAN')
+        scans_keys,counts=np.unique(scans, return_counts=True)
+        integrations = dict(zip(scans_keys, counts))
+        self.summary = []
+        for scan in scans_keys:
+            objects_in_scan = self.data[np.where(self.data.field('SCAN') == scan)]
+            first_row = objects_in_scan[0]
+            velocity = first_row.field('VELOCITY') * (u.m / u.s)
+            rest_freq = first_row.field('RESTFREQ') * u.Hz
+            ifnum,counts=np.unique(objects_in_scan.field('IFNUM'), return_counts=True)
+            fdnum,counts=np.unique(objects_in_scan.field('FDNUM'), return_counts=True)
+            nint = "%d" % len(np.unique(objects_in_scan.field('DATE-OBS')))
+            azimuth = "%.2lf" % first_row.field('AZIMUTH')
+            elevation = "%.2lf" % first_row.field('ELEVATIO')
+            self.summary.append("%s%s%s%s%s%s%s%s%s%s%s" % (str(scan).rjust(8), first_row.field('OBJECT').rjust(14), str(velocity.to(u.km/u.s)).rjust(15), (first_row.field('OBSMODE').split(':')[0]).rjust(6), str(first_row.field('PROCSEQN')).rjust(4), str(rest_freq.to(u.GHz)).rjust(15), str(len(ifnum)).rjust(6), str(nint).rjust(6), str(len(fdnum)).rjust(6), azimuth.rjust(8), elevation.rjust(8)))
 
-for line in summary:
-    print line
+    def Summary(self):
+        print "File: ", self.path
+        header_summary = "%s%s%s%s%s%s%s%s%s%s%s" % ("Scan".rjust(8), "Source".rjust(14), "Vel".rjust(15), 'Proc'.rjust(6), 'Seq'.rjust(4), 'RestF'.rjust(15), 'nIF'.rjust(6), 'nInt'.rjust(6), 'nFd'.rjust(6), 'Az'.rjust(8), 'El'.rjust(8))
+        print header_summary
+        print "=" * len(header_summary)
+        for line in self.summary:
+            print line
 
-#objects = data.field('OBJECT')
-#unique,counts=np.unique(objects, return_counts=True)
-#objects = dict(zip(unique, counts))
-#for object_name in objects.keys():
-#    print object_name
+if __name__ == "__main__":
+
+    ffits = fit_file("%s/%s.acs.fits" % (DATA_PATH, filename))
+    ffits.Summary()
 
 
 
