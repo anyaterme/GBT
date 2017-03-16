@@ -12,12 +12,6 @@ DATA = 6
 DATA_PATH = "../data/AGBT10B_045_01_SDFITS/"
 filename = "AGBT10B_045_01.raw"
 
-
-
-#hdulist = fits.open("%s/%s.dcr.fits" % (DATA_PATH, filename))
-#hdulist.close()
-
-
 class fit_file:
     def __init__(self, path):
         self.path = path
@@ -28,7 +22,6 @@ class fit_file:
 
         scans = self.data.field('SCAN')
         scans_keys,counts=np.unique(scans, return_counts=True)
-        integrations = dict(zip(scans_keys, counts))
         self.summary = []
         for scan in scans_keys:
             objects_in_scan = self.data[np.where(self.data.field('SCAN') == scan)]
@@ -43,18 +36,42 @@ class fit_file:
             self.summary.append("%s%s%s%s%s%s%s%s%s%s%s" % (str(scan).rjust(8), first_row.field('OBJECT').rjust(14), str(velocity.to(u.km/u.s)).rjust(15), (first_row.field('OBSMODE').split(':')[0]).rjust(6), str(first_row.field('PROCSEQN')).rjust(4), str(rest_freq.to(u.GHz)).rjust(15), str(len(ifnum)).rjust(6), str(nint).rjust(6), str(len(fdnum)).rjust(6), azimuth.rjust(8), elevation.rjust(8)))
 
     def Summary(self):
+        """Show fit file summary"""
         print "File: ", self.path
         header_summary = "%s%s%s%s%s%s%s%s%s%s%s" % ("Scan".rjust(8), "Source".rjust(14), "Vel".rjust(15), 'Proc'.rjust(6), 'Seq'.rjust(4), 'RestF'.rjust(15), 'nIF'.rjust(6), 'nInt'.rjust(6), 'nFd'.rjust(6), 'Az'.rjust(8), 'El'.rjust(8))
         print header_summary
         print "=" * len(header_summary)
         for line in self.summary:
             print line
+    def T_cal(self, scan):
+        objects_in_scan = self.data[np.where(self.data.field('SCAN') == scan)]
+        return objects_in_scan.field('TCAL')
 
+    def T_sys(self, scan, force=False):
+        if ((not(hasattr(self, 't_sys'))) or (force)):
+            objects_in_scan = self.data[np.where(self.data.field('SCAN') == scan)]
+            objects_in_cal_on = objects_in_scan[np.where(objects_in_scan.field('CAL') == 'T')]
+            t_cal = objects_in_scan.field('TCAL')
+
+            data_on = objects_in_cal_on.field('DATA')
+            limit = int(len(data_on[0]) * 0.1)
+            ref_80 = data_on[:,limit:len(data_on)-limit]
+            ref_80_avg_on = np.mean(ref_80)
+
+            objects_in_cal_off = objects_in_scan[np.where(objects_in_scan.field('CAL') == 'F')]
+            data_off = objects_in_cal_off.field('DATA')
+            limit = int(len(data_off[0]) * 0.1)
+            ref_80 = data_off[:,limit:len(data_off)-limit]
+            ref_80_avg_off = np.average(ref_80)
+            self.t_sys = t_cal * (ref_80_avg_off) / (ref_80_avg_on - ref_80_avg_off) + t_cal*0.5
+        return self.t_sys
+
+
+############################################ MAIN ########################################
 if __name__ == "__main__":
-
     ffits = fit_file("%s/%s.acs.fits" % (DATA_PATH, filename))
     ffits.Summary()
-
+    print ffits.T_cal(11)
 
 
 
