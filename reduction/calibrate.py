@@ -43,6 +43,7 @@ class fit_file:
         print "=" * len(header_summary)
         for line in self.summary:
             print line
+        print len(self.summary)
     def T_cal(self, scan):
         objects_in_scan = self.data[np.where(self.data.field('SCAN') == scan)]
         return objects_in_scan.field('TCAL')
@@ -70,8 +71,8 @@ class fit_file:
 ############################################ MAIN ########################################
 if __name__ == "__main__":
     ffits = fit_file("%s/%s.acs.fits" % (DATA_PATH, filename))
-    ffits.Summary()
-    print ffits.T_cal(11)
+#    ffits.Summary()
+#    print ffits.T_cal(11)
 
 
 
