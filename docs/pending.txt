@@ -1,4 +1,5 @@
 2017/04/21
+0. El numero de fases hae referencia a las distintas combinaciones de sig_ref/cal
 1. Relacionar archivos de observacion con archivos de datos. (tar de Stan)
 2. Intentar calibracion estandar (getnod, getifs, etc...)
 3. Flow Chart de calibracion a mano. (comando y descripcion)

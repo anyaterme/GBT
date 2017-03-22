@@ -14,6 +14,8 @@ filename = "AGBT10B_045_01.raw"
 
 class fit_file:
     def __init__(self, path):
+		print "Loading file %s..." % path
+		start_time = time.now()
         self.path = path
         hdulist = fits.open(path)
         hdu = hdulist[1]
@@ -34,6 +36,7 @@ class fit_file:
             azimuth = "%.2lf" % first_row.field('AZIMUTH')
             elevation = "%.2lf" % first_row.field('ELEVATIO')
             self.summary.append("%s%s%s%s%s%s%s%s%s%s%s" % (str(scan).rjust(8), first_row.field('OBJECT').rjust(14), str(velocity.to(u.km/u.s)).rjust(15), (first_row.field('OBSMODE').split(':')[0]).rjust(6), str(first_row.field('PROCSEQN')).rjust(4), str(rest_freq.to(u.GHz)).rjust(15), str(len(ifnum)).rjust(6), str(nint).rjust(6), str(len(fdnum)).rjust(6), azimuth.rjust(8), elevation.rjust(8)))
+		print "Load Time: ", time.now()-start_time
 
     def Summary(self):
         """Show fit file summary"""

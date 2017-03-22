@@ -67,8 +67,8 @@ TTYPE58 => Quad. Det. method A,B,C. Blank indicates none.
 TTYPE59 => line velocity in rest frame
 TTYPE60 => zero channel
 TTYPE61 => Doppler tracked frequency
-TTYPE62 => signal is true, reference is false
-TTYPE63 => cal ON is true, cal OFF is false
+TTYPE62 => signal is true, reference is false => SIG
+TTYPE63 => cal ON is true, cal OFF is false => CAL
 TTYPE64 => LOW or HIGH, may eventually be other types
 TTYPE65 => 4mm RX ambient load temp (K)
 TTYPE66 => 4mm RX cold load temp (K)
