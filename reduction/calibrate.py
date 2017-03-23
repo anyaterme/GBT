@@ -73,6 +73,35 @@ class fit_file:
             self.t_sys = t_cal * (ref_80_avg_off) / (ref_80_avg_on - ref_80_avg_off) + t_cal*0.5
         return self.t_sys
 
+    def getRecord(self, index):
+        return self.data[index]
+
+    def getSource(self, name, scan = None):
+        if scan is not None:
+            objects_in_scan = self.data[np.where(self.data.field('SCAN') == scan)]
+            return objects_in_scan[np.where(self.data.field('OBJECT') == name)]
+        return self.data[np.where(self.data.field('OBJECT') == name)]
+
+    def getListSources(self):
+        objects = self.data.field('OBJECT')
+        objects_name,counts=np.unique(objects, return_counts=True)
+        return (objects_name, counts)
+
+    def scan_duration(self, scan):
+        objects_in_scan = self.data[np.where(self.data.field('SCAN') == scan)]
+        return (sum(objects_in_scan.field('DURATION')))
+
+    def source_duration(self, source):
+        objects_in = self.data[np.where(self.data.field('OBJECT') == source)]
+        scan_keys =np.unique(objects.field('SCAN'))
+        result = {}
+        for scan in scan_keys:
+            result[scan] = sum(objects_in.field('DURATION'))
+        return (result)
+
+        
+        
+
 
 ############################################ MAIN ########################################
 if __name__ == "__main__":
