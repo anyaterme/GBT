@@ -14,8 +14,8 @@ filename = "AGBT10B_045_01.raw"
 
 class fit_file:
     def __init__(self, path):
-		print "Loading file %s..." % path
-		start_time = time.now()
+        print "Loading file %s..." % path
+        start_time = time.time()
         self.path = path
         hdulist = fits.open(path)
         hdu = hdulist[1]
@@ -36,17 +36,20 @@ class fit_file:
             azimuth = "%.2lf" % first_row.field('AZIMUTH')
             elevation = "%.2lf" % first_row.field('ELEVATIO')
             self.summary.append("%s%s%s%s%s%s%s%s%s%s%s" % (str(scan).rjust(8), first_row.field('OBJECT').rjust(14), str(velocity.to(u.km/u.s)).rjust(15), (first_row.field('OBSMODE').split(':')[0]).rjust(6), str(first_row.field('PROCSEQN')).rjust(4), str(rest_freq.to(u.GHz)).rjust(15), str(len(ifnum)).rjust(6), str(nint).rjust(6), str(len(fdnum)).rjust(6), azimuth.rjust(8), elevation.rjust(8)))
-		print "Load Time: ", time.now()-start_time
+        print "Load Time: ", time.time()-start_time
 
     def Summary(self):
         """Show fit file summary"""
         print "File: ", self.path
-        header_summary = "%s%s%s%s%s%s%s%s%s%s%s" % ("Scan".rjust(8), "Source".rjust(14), "Vel".rjust(15), 'Proc'.rjust(6), 'Seq'.rjust(4), 'RestF'.rjust(15), 'nIF'.rjust(6), 'nInt'.rjust(6), 'nFd'.rjust(6), 'Az'.rjust(8), 'El'.rjust(8))
+        header_summary = "      %s%s%s%s%s%s%s%s%s%s%s" % ("Scan".rjust(8), "Source".rjust(14), "Vel".rjust(15), 'Proc'.rjust(6), 'Seq'.rjust(4), 'RestF'.rjust(15), 'nIF'.rjust(6), 'nInt'.rjust(6), 'nFd'.rjust(6), 'Az'.rjust(8), 'El'.rjust(8))
         print header_summary
-        print "=" * len(header_summary)
+        print "=" * (len(header_summary) + 6)
+        index = 0
         for line in self.summary:
-            print line
-        print len(self.summary)
+            print "[%.4d]%s" % (index, line)
+            index += 1
+        print "Total scans: ", len(self.summary)
+
     def T_cal(self, scan):
         objects_in_scan = self.data[np.where(self.data.field('SCAN') == scan)]
         return objects_in_scan.field('TCAL')

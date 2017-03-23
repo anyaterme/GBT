@@ -1,0 +1,62 @@
+# GBT observing script for 10B-45: Cyanopolyynes + Methyl Cyanide
+# observers  V. Hernandez  &  S. Kurtz
+# January 2011 observations
+#
+# Standard Freq Switch observing
+
+#  This is for the 2 low-Dec sources, at both freq settings
+#  SB should take about 1.2 hr to run
+
+Src1 = "I20126"
+Src2 = "DR21-OH"
+Src3 = "I20126_ptg"
+
+# Scan duration in seconds
+ScanDur=300
+
+# Load configuration file
+execfile("/users/skurtz/10B_45/cyano_config_file")
+
+# Load catalog files
+Catalog("/users/skurtz/10B_45/cyano.cat")
+Catalog("/users/skurtz/10B_45/cyano_ptg.cat")
+Catalog(pointing)
+Catalog(fluxcal)
+
+# set-up to 26/29 GHz before pointing/focus
+Configure(FSConfigMMF1A)
+
+# Pointing/Focus check near the 1st source
+Slew(Src3)
+AutoPeakFocus(frequency=28000)
+
+# Reconfigure to undo the AutoPeakFocus config changes
+Configure(PSConfigMMF1)
+
+# Balance IF system
+Balance()
+
+# Observe for 0.5 hr
+
+Nod(Src1,"1","2",ScanDur)
+Nod(Src2,"1","2",ScanDur)
+
+
+# Pointing still OK, but re-focus for 36 GHz
+Configure(FSConfigMMF2A)
+Slew(Src3)
+AutoFocus(frequency=36650)
+
+# Reconfigure to undo the AutoFocus config changes
+Configure(PSConfigMMF2)
+
+# Balance IF system
+Balance()
+
+# Observe for 0.5 hour
+
+Nod(Src1,"1","2",ScanDur)
+Nod(Src2,"1","2",ScanDur)
+
+# -----------------------------------
+

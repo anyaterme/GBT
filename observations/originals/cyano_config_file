@@ -1,0 +1,153 @@
+# Configuration file for project 10B_45
+# January 2011 observations
+#
+# Setups for freq switching
+#
+FSConfigMMF1 = """
+receiver  = 'Rcvr26_40'
+beam      = 'B1'
+obstype   = 'Spectroscopy'
+backend   = 'Spectrometer'
+nwin      = 4
+restfreq  = 26670., 26670., 29330., 29330.
+deltafreq = 0,0,0,0
+bandwidth = 200
+swmode    = "sp"
+swtype    = "fsw"
+swfreq    = 0, +6.250
+swper     = 1.0
+tint      = 10
+vlow      = 0
+vhigh     = 0
+vframe    = "lsrk"
+vdef      = "Radio"
+noisecal  =  "LR"
+pol       = "Circular"
+nchan  =  "low"
+spect.levels = 3
+"""  
+
+# Setups for freq switching
+#
+FSConfigMMF1A = """
+receiver  = 'Rcvr26_40'
+beam      = 'B1'
+obstype   = 'Spectroscopy'
+backend   = 'Spectrometer'
+nwin      = 4
+restfreq  = 26670., 26670., 29330., 29330.
+deltafreq = 0,0,0,0
+bandwidth = 200
+swmode    = "sp"
+swtype    = "fsw"
+swfreq    = 0, +6.250
+swper     = 1.0
+tint      = 10
+vlow      = 0
+vhigh     = 0
+vframe    = "topo"
+vdef      = "Radio"
+noisecal  =  "LR"
+pol       = "Circular"
+nchan  =  "low"
+spect.levels = 3
+"""  
+
+FSConfigMMF2 = """
+receiver  = 'Rcvr26_40'
+beam      = 'B1'
+obstype   = 'Spectroscopy'
+backend   = 'Spectrometer'
+nwin      = 4
+restfreq  = 36460., 36460., 36850., 36850.
+deltafreq = 0,0,0,0
+bandwidth = 200
+swmode    = "sp"
+swtype    = "fsw"
+swfreq    = 0, +6.250
+swper     = 1.0
+tint      = 10
+vlow      = 0
+vhigh     = 0
+vframe    = "lsrk"
+vdef      = "Radio"
+noisecal  =  "LR"
+pol       = "Circular"
+nchan  =  "low"
+spect.levels = 3
+"""  
+FSConfigMMF2A = """
+receiver  = 'Rcvr26_40'
+beam      = 'B1'
+obstype   = 'Spectroscopy'
+backend   = 'Spectrometer'
+nwin      = 4
+restfreq  = 36460., 36460., 36850., 36850.
+deltafreq = 0,0,0,0
+bandwidth = 200
+swmode    = "sp"
+swtype    = "fsw"
+swfreq    = 0, +6.250
+swper     = 1.0
+tint      = 10
+vlow      = 0
+vhigh     = 0
+vframe    = "topo"
+vdef      = "Radio"
+noisecal  =  "LR"
+pol       = "Circular"
+nchan  =  "low"
+spect.levels = 3
+"""  
+
+#
+# Setups for nodding or position switching
+#
+PSConfigMMF1 = """
+receiver  = 'Rcvr26_40'
+beam      = 'B1'
+obstype   = 'Spectroscopy'
+backend   = 'Spectrometer'
+nwin      = 4
+restfreq  = 26670., 26670., 29330., 29330.
+deltafreq = 0,0,0,0
+bandwidth = 200
+swmode    = "tp"
+swtype    = "none"
+swper     = 0.1
+swfreq    = 0.0, 0.0
+tint      = 1.5 
+vlow      = 0
+vhigh     = 0
+vframe    = "lsrk"
+vdef      = "Radio"
+noisecal  =  "LR"
+pol       = "Circular"
+nchan  =  "low"
+spect.levels = 3
+"""  
+
+PSConfigMMF2 = """
+receiver  = 'Rcvr26_40'
+beam      = 'B1'
+obstype   = 'Spectroscopy'
+backend   = 'Spectrometer'
+nwin      = 4
+restfreq  = 36460., 36460., 36850., 36850.
+deltafreq = 0,0,0,0
+bandwidth = 200
+swmode    = "tp"
+swtype    = "none"
+swper     = 0.1
+swfreq    = 0.0, 0.0
+tint      = 1.5 
+vlow      = 0
+vhigh     = 0
+vframe    = "lsrk"
+vdef      = "Radio"
+noisecal  =  "LR"
+pol       = "Circular"
+nchan  =  "low"
+spect.levels = 3
+"""  
+

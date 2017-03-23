@@ -1,0 +1,42 @@
+# GBT observing script for 10B-45: Cyanopolyynes + Methyl Cyanide
+# observers  V. Hernandez  &  S. Kurtz
+# January 2011 observations
+#
+# Calibration Scan
+
+# Load configuration file
+execfile("/users/skurtz/10B_45/cyano_config_file")
+
+# Load catalog files
+Catalog("/users/skurtz/10B_45/cyano_catalog_file")
+Catalog(pointing)
+Catalog(fluxcal)
+
+#   Do a calibrator scan at both bands (26/29 and 36 GHz)
+#   Standard Nodding observing of a calibrator
+
+ScanDur=120
+Src="3C48"
+
+# Set up for the 26/29 GHz lines
+Configure(PSConfigMMF1)
+
+# Pointing/Focus check 
+#  freq is the central value for the 2 freq windows
+#  ie, halfway between 26,670 and 29,330 = 28,000
+AutoPeakFocus(Src,frequency=28000)
+
+# Observe using the first configuration
+Configure(PSConfigMMF1)
+Balance()
+Nod(Src,"1","2",ScanDur)
+
+# Repeat for the other configuration (no need to re-point)
+# no need to configure before focus because Rx is already selected
+# but we DO configure AFTER the focus prior to nodding
+
+AutoFocus(Src,frequency=36650)
+Configure(PSConfigMMF2)
+Nod(Src,"1","2",ScanDur)
+
+#---------------

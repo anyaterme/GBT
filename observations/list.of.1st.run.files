@@ -1,0 +1,40 @@
+sb.3C286_CAL
+sb.3C48_CAL
+sb.A
+sb.A_Nod
+sb.B
+sb.B_Nod
+sb.B_Nod2
+sb.C
+sb.D
+sb.D_Nod
+sb.E
+sb.E_Nod
+sb.F
+sb.G
+sb.G_Nod
+
+i save all these to the desktop as Save.XXXXXX
+
+Now, i copy sb.E_Nod to sb.H_Nod, and make the following changes:
+
+1. change ScanDur to 450
+2. change Src1 to   Src1 = "G23_60MM1"
+   change Src2 to   Src2 = "G23_60MM2"
+   change Src3 to   Src3 = "G23_60MM1_ptg"
+
+Ahora copiamos esto a sb.I_Nod y cambiamos nada mas las Src#:
+
+sb.I_Nod tiene:  
+Src1 = "G30_97MM1"
+Src2 = "G31_97MM1"
+Src3 = "G30_97MM1_ptg"
+
+N.B.  probablemente tendremos que quitar una fuente o bajar
+      el ScanDur; no tendremos tiempo para ambas fuentes en sb.I_Nod
+
+Ahora, copiamos esto a sb.C_Nod con:
+Src1 = "G29_96"
+Src2 = "G31_41"
+Src3 = "G29_96_ptg"
+

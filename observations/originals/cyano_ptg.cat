@@ -1,0 +1,26 @@
+# Cyano-source list
+# Project 10B-045
+# January 2011 observing run
+#
+format=spherical
+coordmode=J2000
+head=name  RA           DEC      VELOCITY  type
+G10_47_ptg   18:08:38.2    -19:51:49  +0   HMC  
+G10_62_ptg      18:10:28.7    -19:55:50  +0    HMC  
+G23_60MM1_ptg   18:34:11.6    -08:19:06  +0   MC   
+G23_60MM2_ptg   18:34:21.1    -08:18:07  +0   MC   
+G29_96_ptg      18:46:04.0    -02:39:21  +0   HMC  
+G29_96_ptg      18:46:04.0    -02:39:21   +0   HMC
+G31_41_ptg     18:47:34.3    -01:12:46  +00   HMC  
+G30_97MM1_ptg   18:48:21.6    -01:48:27  +00   MC   
+G31_97MM1_ptg   18:49:36.3    -00:45:45  +00   MC   
+G34_43MM1_ptg   18:53:18.0    +01:25:24  +00   HMC  
+G34_26_ptg      18:53:18.5    +01:14:58  +00   HMC  
+G34_43MM4_ptg   18:53:19.0    +01:24:08  +00   MC   
+G45_07_ptg      19:13:22.0    +10:50:54  +00   HMC  
+G45_12_ptg      19:13:27.9    +10:53:37  +00   HMC  
+I20126_ptg      20:14:26.0    +41:13:32  +0    HMC  
+DR21-OH_ptg     20:39:01.0    +42:22:48  +0    HMC  
+# 
+#  MC = (cold) molecular core; HMC = hot molecular core
+#
