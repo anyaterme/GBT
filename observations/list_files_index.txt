@@ -1,0 +1,24 @@
+File 01 2011-01-20T21:01:27.07 2011-01-20T13:15:15.00
+./observations/originals/sb.3C286_CAL:Src="3C286"
+./observations/originals/sb.E:Src2 = "DR21-OH"
+./observations/originals/sb.A:Src1 = "G10_47"
+./observations/originals/sb.A:Src2 = "G10_62"
+./observations/originals/sb.C:Src1 = "G29_96"
+./observations/originals/sb.C:Src2 = "G31_41"
+./observations/originals/sb.B:Src1 = "G34_26"
+./observations/originals/sb.B:Src2 = "G34_43MM1"
+./observations/originals/sb.G:Src3 = "G34_43MM4"
+./observations/originals/sb.D:Src1 = "G45_07"
+./observations/originals/sb.D:Src2 = "G45_12"
+./observations/originals/sb.E:Src1 = "I20126"
+===========================================================
+File 03 2011-01-30T15:09:58.04 2011-01-30T12:04:36.00
+./observations/originals/sb.3C286_CAL:Src="3C286"
+./observations/originals/sb.C:Src1 = "G29_96"
+./observations/originals/sb.G:Src1 = "G30_97MM1"
+./observations/originals/sb.C:Src2 = "G31_41"
+./observations/originals/sb.G:Src2 = "G31_97MM1"
+============================================================
+File 04 2011-02-04T18:01:34.08 2011-02-04T17:13:53.00
+./observations/originals/sb.3C48_CAL:Src="3C48"
+./observations/originals/sb.G:Src3 = "G34_43MM4"
