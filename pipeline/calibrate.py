@@ -18,6 +18,7 @@ class fit_file:
 
         print "Load Time: ", time.time()-start_time
 
+    @property
     def summary(self, force=False):
         """Show fit file summary"""
         if (force):
@@ -66,7 +67,6 @@ class fit_file:
             limit = int(len(data_on[0]) * 0.1)
             ref_80 = data_on[:,limit:len(data_on[0])-limit]
             ref_80_avg_on = np.mean(ref_80)
-            print "TEST", ref_80, ref_80_avg_on
 
             objects_in_cal_off = objects_in_scan[np.where(objects_in_scan.field('CAL') == 'F')]
             data_off = objects_in_cal_off.field('DATA')
@@ -117,7 +117,7 @@ class fit_file:
         sky_freq = record.field('OBSFREQ') * u.Hz
         title = "Scan:%s    Vel:%s    Date: %s" % (record.field('SCAN'), str(record.field('VELOCITY')*(u.km / u.s)).rjust(14), record.field('DATE-OBS')[0:10])
         title = "%s    FO: %s    F$_{sky}$: %s" % (title, central_freq.to(unit), sky_freq.to(unit).round(2))
-        title = "%s\n%s" % (title, record.field('OBJECT'))
+        title = "%s\n%s   T$_{sys}$: %s" % (title, record.field('OBJECT'), str(record.field('TSYS')*u.k))
         data = record.field('DATA')
         data = data[::-1]           # The data are inverted; we have to reverse them
         resolution = record.field('BANDWID') * u.Hz / len(data)
@@ -131,6 +131,49 @@ class fit_file:
         ax.set_ylabel('Counts')
         ax.grid(color='r', which='both')
         plt.show(block=False)
+
+    def getsigref(self, sigscan, refscan, ifnum=None, intnum=None, fdnum=None, tau=None, unit=u.GHz):
+        status = -1
+        sigdata = self.data[np.where(self.data.field('SCAN') == sigscan)]
+        sig_n_cal_states = len(np.unique(sigdata.field('CAL')))
+        if (sig_n_cal_states > 2):
+            print "The number of cal states in the sig scan is nor 1 or 2, as needed for this procedure"
+            return None
+        refdata = self.data[np.where(self.data.field('SCAN') == refscan)]
+        ref_n_cal_states = len(np.unique(refdata.field('CAL')))
+        if (ref_n_cal_states > 2):
+            print "The number of cal states in the sig scan is nor 1 or 2, as needed for this procedure"
+            return None
+
+        if (sig_n_cal_states == 2):
+            sig = sigdata[np.where(sigdata.field('CAL') == 'F')]
+            sigwcal = sigdata[np.where(sigdata.field('CAL') == 'T')]
+
+        if (ref_n_cal_states == 2):
+            ref = refdata[np.where(refdata.field('CAL') == 'F')]
+            refwcal = refdata[np.where(refdata.field('CAL') == 'T')]
+
+        record = sig[0]
+        central_freq = record.field('RESTFREQ') * u.Hz
+        sky_freq = record.field('OBSFREQ') * u.Hz
+        title = "Scan:%s    Vel:%s    Date: %s" % (record.field('SCAN'), str(record.field('VELOCITY')*(u.km / u.s)).rjust(14), record.field('DATE-OBS')[0:10])
+        title = "%s    FO: %s    F$_{sky}$: %s" % (title, central_freq.to(unit), sky_freq.to(unit).round(2))
+        title = "%s\n%s" % (title, record.field('OBJECT'))
+        data = sig.field('DATA')-ref.field('DATA')
+        data = np.mean(data, axis=0)
+        data = data[::-1]           # The data are inverted; we have to reverse them
+        resolution = sig[0].field('BANDWID') * u.Hz / len(data)
+        low_freq = central_freq - len(data)/2 * resolution
+        high_freq = central_freq + len(data)/2 * resolution
+        freq_axis = np.linspace(low_freq.to(unit).value, high_freq.to(unit).value, len(data))
+        fig, ax = plt.subplots(1,1)
+        plt.title(r'%s' % title, size=10)
+        ax.plot(freq_axis, data)
+        ax.set_xlabel(unit)
+        ax.set_ylabel('Counts')
+        ax.grid(color='r', which='both')
+        plt.show(block=False)
+        return None
 
 ############################################ MAIN ########################################
 if __name__ == "__main__":
