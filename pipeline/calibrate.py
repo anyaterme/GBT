@@ -4,9 +4,10 @@ import time
 from astropy.io import fits
 import astropy.units as u
 import matplotlib.pyplot as plt
+import Calibration
 
 class fit_file:
-    def __init__(self, path):
+    def __init__(self, path, smoothing_window_size=0):
         print "Loading file %s..." % path
         start_time = time.time()
         self.path = path
@@ -15,6 +16,10 @@ class fit_file:
         self.data = hdu.data
         self.lines_summary = None
         hdulist.close()
+        #set calibration constants
+        self.BB = .0132 # Ruze equation parameter
+        self.UNDER_2GHZ_TAU_0 = 0.008
+        self.SMOOTHING_WINDOW = smoothing_window_size
 
         print "Load Time: ", time.time()-start_time
 
@@ -174,6 +179,47 @@ class fit_file:
         ax.grid(color='r', which='both')
         plt.show(block=False)
         return None
+
+    def total_power(self, scan, grouped=True):
+        data_scan = self.data[np.where(self.data.field('SCAN') == scan)]
+        cal_on = data_scan[np.where(data_scan.field('CAL') == 'T')]
+        cal_off = data_scan[np.where(data_scan.field('CAL') == 'F')]
+        data_on = cal_on.field('DATA')
+        data_off = cal_off.field('DATA')
+        t_on = cal_on.field('EXPOSURE')
+        t_off = cal_off.field('EXPOSURE')
+        result = np.ma.mean((data_on, data_off), axis=0)
+        if (grouped):
+            return (np.mean(result, axis=0), np.sum(t_on + t_off), np.sum(t_on), np.sum(t_off))
+        else:
+            return result, t_on + t_off, t_on, t_off
+
+    def total_power_graph(self, scan, path=None, unit=u.GHz):
+        record = self.data[np.where(self.data.field('SCAN') == scan)][0]
+        central_freq = record.field('RESTFREQ') * u.Hz
+        sky_freq = record.field('OBSFREQ') * u.Hz
+        title = "Scan:%s    Vel:%s    Date: %s" % (record.field('SCAN'), str(record.field('VELOCITY')*(u.km / u.s)).rjust(14), record.field('DATE-OBS')[0:10])
+        title = "%s    FO: %s    F$_{sky}$: %s" % (title, central_freq.to(unit), sky_freq.to(unit).round(2))
+        title = "%s\n%s   T$_{sys}$: %s" % (title, record.field('OBJECT'), str(record.field('TSYS')*u.k))
+
+        total_pow = self.total_power(scan)
+        data = total_pow[0]
+        data = data[::-1]           # The data are inverted; we have to reverse them
+        resolution = record.field('BANDWID') * u.Hz / len(data)
+        low_freq = central_freq - len(data)/2 * resolution
+        high_freq = central_freq + len(data)/2 * resolution
+        freq_axis = np.linspace(low_freq.to(unit).value, high_freq.to(unit).value, len(data))
+        fig, ax = plt.subplots(1,1)
+        plt.title(r'%s' % title, size=10)
+        ax.plot(freq_axis, data)
+        ax.set_xlabel(unit)
+        ax.set_ylabel('Counts')
+        ax.grid(color='r', which='both')
+        if (path is None):
+            plt.show(block=False)
+        else:
+            plt.savefig(path)
+
 
 ############################################ MAIN ########################################
 if __name__ == "__main__":
