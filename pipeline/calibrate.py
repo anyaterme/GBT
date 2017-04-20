@@ -198,7 +198,7 @@ class fit_file:
         record = self.data[np.where(self.data.field('SCAN') == scan)][0]
         central_freq = record.field('RESTFREQ') * u.Hz
         sky_freq = record.field('OBSFREQ') * u.Hz
-        title = "Scan:%s    Vel:%s    Date: %s" % (record.field('SCAN'), str(record.field('VELOCITY')*(u.km / u.s)).rjust(14), record.field('DATE-OBS')[0:10])
+        title = "Scan:%s    Vel:%s    Date: %s" % (record.field('SCAN'), str(record.field('VELOCITY')*(u.m / u.s).to(u.km / u.s)).rjust(14), record.field('DATE-OBS')[0:10])
         title = "%s    FO: %s    F$_{sky}$: %s" % (title, central_freq.to(unit), sky_freq.to(unit).round(2))
         title = "%s\n%s   T$_{sys}$: %s" % (title, record.field('OBJECT'), str(record.field('TSYS')*u.k))
 
