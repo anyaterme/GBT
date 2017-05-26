@@ -2,9 +2,18 @@
 import numpy as np
 import time
 from astropy.io import fits
+from scipy.optimize import curve_fit
 import astropy.units as u
 import matplotlib.pyplot as plt
-import Calibration
+import matplotlib.ticker as ticker
+import pexpect
+import spectralines
+
+def gauss_function(x, a, x0, sigma):
+    return a*np.exp(-(x-x0)**2/(2*sigma**2)) 
+
+def lorentzian_function(x, I, x0, gamma):
+    return I * gamma**2 / ((x - x0)**2 + gamma**2) 
 
 class fit_file:
     def __init__(self, path, smoothing_window_size=0):
@@ -20,8 +29,37 @@ class fit_file:
         self.BB = .0132 # Ruze equation parameter
         self.UNDER_2GHZ_TAU_0 = 0.008
         self.SMOOTHING_WINDOW = smoothing_window_size
+        process = pexpect.spawn("gbtidl")
+        self.process = process
+        prompts = ["GBTIDL -> "]
+        self.prompts = prompts
+        i=process.expect(prompts)
+        print "Access to gbtidl..."
+        process.sendline("filein, '%s'" % path)
+        print "File read"
+#        i=process.expect(prompts, timeout=120)
+#        process.sendline("getkanod, 91")
+#        i=process.expect(prompts, timeout=120)
+#        process.sendline("dcascii, file='aux.txt'")
+#        i=process.expect(prompts, timeout=120)
+#        process.sendline("exit")
+
 
         print "Load Time: ", time.time()-start_time
+
+    def reload_gbtidl(self):
+        try:
+            self.process.sendline("exit")
+        except:
+            pass
+        process = pexpect.spawn("gbtidl")
+        self.process = process
+        prompts = ["GBTIDL -> "]
+        self.prompts = prompts
+        i=process.expect(prompts)
+        print "Access to gbtidl..."
+        process.sendline("filein, '%s'" % self.path)
+        print "File read"
 
     @property
     def summary(self, force=False):
@@ -62,25 +100,6 @@ class fit_file:
         objects_in_scan = self.data[np.where(self.data.field('SCAN') == scan)]
         return objects_in_scan.field('TCAL')
 
-    def T_sys(self, scan, force=False):
-        if ((not(hasattr(self, 't_sys'))) or (force)):
-            objects_in_scan = self.data[np.where(self.data.field('SCAN') == scan)]
-            objects_in_cal_on = objects_in_scan[np.where(objects_in_scan.field('CAL') == 'T')]
-            t_cal = objects_in_scan.field('TCAL')
-
-            data_on = objects_in_cal_on.field('DATA')
-            limit = int(len(data_on[0]) * 0.1)
-            ref_80 = data_on[:,limit:len(data_on[0])-limit]
-            ref_80_avg_on = np.mean(ref_80)
-
-            objects_in_cal_off = objects_in_scan[np.where(objects_in_scan.field('CAL') == 'F')]
-            data_off = objects_in_cal_off.field('DATA')
-            limit = int(len(data_off[0]) * 0.1)
-            ref_80 = data_off[:,limit:len(data_off[0])-limit]
-            ref_80_avg_off = np.average(ref_80)
-            self.t_sys = t_cal * (ref_80_avg_off) / (ref_80_avg_on - ref_80_avg_off) + t_cal*0.5
-        return self.t_sys
-
     def record(self, index):
         return self.data[index]
 
@@ -102,6 +121,12 @@ class fit_file:
     def scan_duration(self, scan):
         objects_in_scan = self.data[np.where(self.data.field('SCAN') == scan)]
         return (sum(objects_in_scan.field('DURATION')))
+
+    def obsmode(self, scan):
+        objects = self.data[np.where(self.data.field('SCAN') == scan)]
+        obsmode = np.unique(objects.field('OBSMODE'))
+        obsmode = obsmode[0].split(':')[0]
+        return obsmode
 
     def source_duration(self, source):
         objects_in = self.data[np.where(self.data.field('OBJECT') == source)]
@@ -137,88 +162,175 @@ class fit_file:
         ax.grid(color='r', which='both')
         plt.show(block=False)
 
-    def getsigref(self, sigscan, refscan, ifnum=None, intnum=None, fdnum=None, tau=None, unit=u.GHz):
-        status = -1
-        sigdata = self.data[np.where(self.data.field('SCAN') == sigscan)]
-        sig_n_cal_states = len(np.unique(sigdata.field('CAL')))
-        if (sig_n_cal_states > 2):
-            print "The number of cal states in the sig scan is nor 1 or 2, as needed for this procedure"
-            return None
-        refdata = self.data[np.where(self.data.field('SCAN') == refscan)]
-        ref_n_cal_states = len(np.unique(refdata.field('CAL')))
-        if (ref_n_cal_states > 2):
-            print "The number of cal states in the sig scan is nor 1 or 2, as needed for this procedure"
-            return None
-
-        if (sig_n_cal_states == 2):
-            sig = sigdata[np.where(sigdata.field('CAL') == 'F')]
-            sigwcal = sigdata[np.where(sigdata.field('CAL') == 'T')]
-
-        if (ref_n_cal_states == 2):
-            ref = refdata[np.where(refdata.field('CAL') == 'F')]
-            refwcal = refdata[np.where(refdata.field('CAL') == 'T')]
-
-        record = sig[0]
-        central_freq = record.field('RESTFREQ') * u.Hz
-        sky_freq = record.field('OBSFREQ') * u.Hz
-        title = "Scan:%s    Vel:%s    Date: %s" % (record.field('SCAN'), str(record.field('VELOCITY')*(u.km / u.s)).rjust(14), record.field('DATE-OBS')[0:10])
-        title = "%s    FO: %s    F$_{sky}$: %s" % (title, central_freq.to(unit), sky_freq.to(unit).round(2))
-        title = "%s\n%s" % (title, record.field('OBJECT'))
-        data = sig.field('DATA')-ref.field('DATA')
-        data = np.mean(data, axis=0)
-        data = data[::-1]           # The data are inverted; we have to reverse them
-        resolution = sig[0].field('BANDWID') * u.Hz / len(data)
-        low_freq = central_freq - len(data)/2 * resolution
-        high_freq = central_freq + len(data)/2 * resolution
-        freq_axis = np.linspace(low_freq.to(unit).value, high_freq.to(unit).value, len(data))
-        fig, ax = plt.subplots(1,1)
-        plt.title(r'%s' % title, size=10)
-        ax.plot(freq_axis, data)
-        ax.set_xlabel(unit)
-        ax.set_ylabel('Counts')
-        ax.grid(color='r', which='both')
-        plt.show(block=False)
-        return None
-
-    def total_power(self, scan, grouped=True):
-        data_scan = self.data[np.where(self.data.field('SCAN') == scan)]
-        cal_on = data_scan[np.where(data_scan.field('CAL') == 'T')]
-        cal_off = data_scan[np.where(data_scan.field('CAL') == 'F')]
-        data_on = cal_on.field('DATA')
-        data_off = cal_off.field('DATA')
-        t_on = cal_on.field('EXPOSURE')
-        t_off = cal_off.field('EXPOSURE')
-        result = np.ma.mean((data_on, data_off), axis=0)
-        if (grouped):
-            return (np.mean(result, axis=0), np.sum(t_on + t_off), np.sum(t_on), np.sum(t_off))
+    def spectrum(self, scan):
+        if (self.procseqn(scan) == 1):
+            process = self.process
+            prompts = self.prompts
+            filename = self.path.split('/')[-1].split('.')[0]
+            print "Getting spectrum..."
+            if (self.obsmode(scan) == 'Track'):
+                process.sendline("getfs, %d" % scan)
+            else:
+                process.sendline("getkanod, %d" % scan)
+            i=process.expect(prompts, timeout=120)
+            print "Generating file %s_scan_%d.txt..." % (filename,scan)
+            process.sendline("dcascii, file='%s_scan_%d.txt'" % (filename,scan))
+            i=process.expect(prompts, timeout=120)
         else:
-            return result, t_on + t_off, t_on, t_off
+            print "This scan (%d) is not the first in the sequence" % scan
 
-    def total_power_graph(self, scan, path=None, unit=u.GHz):
-        record = self.data[np.where(self.data.field('SCAN') == scan)][0]
-        central_freq = record.field('RESTFREQ') * u.Hz
-        sky_freq = record.field('OBSFREQ') * u.Hz
-        title = "Scan:%s    Vel:%s    Date: %s" % (record.field('SCAN'), str(record.field('VELOCITY')*(u.m / u.s).to(u.km / u.s)).rjust(14), record.field('DATE-OBS')[0:10])
-        title = "%s    FO: %s    F$_{sky}$: %s" % (title, central_freq.to(unit), sky_freq.to(unit).round(2))
-        title = "%s\n%s   T$_{sys}$: %s" % (title, record.field('OBJECT'), str(record.field('TSYS')*u.k))
+    def read_spectrum(self, scan, median_filter=7, unit=u.GHz, snr = 7., toscreen=True, tofile = False, showfit = True, path_save="./images"):
+        detections = []
+        result_detections = []
+        if (self.procseqn(scan) == 1):
+            from scipy.signal import find_peaks_cwt, medfilt
+            import os.path
+            import time
+            filename = self.path.split('/')[-1].split('.')[0]
+            if (not os.path.exists("%s_scan_%d.txt" % (filename, scan))):
+                self.spectrum(scan)
+                time.sleep(5)
+                print "File saved"
+            print "Reading spectrum..."
+            f = np.loadtxt("%s_scan_%d.txt" % (filename, scan), skiprows=3)
+            x = f[:,0]
+            y = f[:,1]
+            x = np.flip(x, axis=0)
+            y = np.flip(y, axis=0)
+            #y= medfilt(y,median_filter)
 
-        total_pow = self.total_power(scan)
-        data = total_pow[0]
-        data = data[::-1]           # The data are inverted; we have to reverse them
-        resolution = record.field('BANDWID') * u.Hz / len(data)
-        low_freq = central_freq - len(data)/2 * resolution
-        high_freq = central_freq + len(data)/2 * resolution
-        freq_axis = np.linspace(low_freq.to(unit).value, high_freq.to(unit).value, len(data))
-        fig, ax = plt.subplots(1,1)
-        plt.title(r'%s' % title, size=10)
-        ax.plot(freq_axis, data)
-        ax.set_xlabel(unit)
-        ax.set_ylabel('Counts')
-        ax.grid(color='r', which='both')
-        if (path is None):
-            plt.show(block=False)
+            print "Detecting in scan %s..." % scan
+
+            x80 = x[int(len(x)*0.1):int(len(x)*0.9)]
+            y80 = y[int(len(x)*0.1):int(len(x)*0.9)]
+            y80 = y80 - np.median(y80)
+            widths = np.arange(5,30,2)
+            indexes = find_peaks_cwt(y80, widths ,min_snr=snr)
+            for i in indexes:
+                maxStd = 0
+                for width in widths:
+                    y_signal = y80[i-(width / 2) : i + (width / 2)]
+                    stdSig = np.std(y_signal**2)
+                    if (stdSig > maxStd):
+                        maxStd = stdSig
+                        widthSel = width 
+                detections.append([i,widthSel])
+
+            if (showfit):
+                ax=plt.subplot(len(detections)+1,1,1)
+            else:
+                ax=plt.subplot(1,1,1)
+
+            data = self.data[np.where(self.data.field('SCAN') == scan)]
+            record = data[0]
+            central_freq = record.field('RESTFREQ') * u.Hz
+            sky_freq = record.field('OBSFREQ') * u.Hz
+            title = "Scan:%s    Vel:%s    Date: %s" % (record.field('SCAN'), str(record.field('VELOCITY')*(u.km / u.s)).rjust(14), record.field('DATE-OBS')[0:10])
+            title = "%s    FO: %s    F$_{sky}$: %s" % (title, central_freq.to(unit), sky_freq.to(unit).round(2))
+            title = "%s\n%s   T$_{sys}$: %s" % (title, record.field('OBJECT'), str(record.field('TSYS')*u.k))
+            print (title)
+            resolution = abs(x80[1]-x80[0]) * u.GHz 
+            low_freq = x80[0] * resolution
+            high_freq = x80[-1] * resolution
+            freq_axis = np.linspace(low_freq.to(unit).value, high_freq.to(unit).value, len(x80))
+            ax.set_title(title)
+
+            bandwidth = (x80[-1]-x80[0]) * u.GHz
+            halpha = spectralines.get_freq(central_freq, bandwidth).to(u.GHz)
+            print "Halpha [%s, %s]: %s" % (central_freq, bandwidth, halpha)
+            plt.plot(x80 * unit,y80,'b')
+            try:
+                plt.plot(halpha, 0.9*max(y80), 'go')
+            except:
+                pass
+            if (len(indexes) > 0):
+                plt.plot(x80[indexes], y80[indexes],'ro')
+                ax.xaxis.set_major_formatter(ticker.FormatStrFormatter("%0.2lf"))
+                ax.set_xlabel('GHz')
+                for index,width in detections:
+                    x_signal = x80[index-(width / 2) : index + (width / 2)]
+                    y_signal = y80[index-(width / 2) : index + (width / 2)]
+                    plt.fill_between(x_signal, y_signal, np.min(y_signal) ,color='y')
+                    result_detections.append([x80[index] * unit, resolution])
+
+                img=0
+                if (showfit):
+                    for index, width in detections:
+                        print "Detection in %s" % (x80[i] * unit)
+                        width = int(1.5*width)
+                        left_limit = np.max([0, index-(width/2)])
+                        right_limit = np.min([len(y80)-1, index + (width / 2)])
+                        x_signal = x80[left_limit : right_limit]
+                        y_signal = y80[left_limit : right_limit]
+                        img = img +1
+                        params=[np.max(y_signal), np.mean(x_signal),0.5*(x_signal[-1] - x_signal[0])]
+
+                        try:
+                            ax=plt.subplot(len(detections)+1,2,2*img +1)
+                            popt,pcov = curve_fit(gauss_function, x_signal, y_signal, p0=params)
+                            #print "Gauss ", params, popt
+                            perfil_gauss = gauss_function(x_signal, *popt)
+                            plt.plot(x_signal, y_signal, 'b')
+                            plt.plot(x_signal, perfil_gauss, 'g')
+                            ax.set_title('Gauss [%s]' % (x80[index] * unit))
+                            ax.set_xlabel('GHz')
+                            ax.xaxis.set_major_formatter(ticker.FormatStrFormatter("%0.5lf"))
+                            ax.set_ylabel('Counts')
+                            ax.plot(x80[index], y80[index],'rx', label=x80[index] * u.GHz)
+                        except Exception as e:
+                            print e
+                            print "Gauss ", params
+                            pass
+
+                        try:
+                            ax=plt.subplot(len(detections)+1,2,2*img+2)
+                            popt,pcov = curve_fit(lorentzian_function, x_signal, y_signal, p0=params)
+                            #print "Lorentz ", params, popt
+                            perfil_lorentz = lorentzian_function(x_signal, *popt)
+                            plt.plot(x_signal, y_signal, 'b')
+                            plt.plot(x_signal, perfil_lorentz, 'r')
+                            ax.set_title('Lorentz [%s]' % (x80[index] * unit))
+                            ax.set_xlabel('GHz')
+                            ax.xaxis.set_major_formatter(ticker.FormatStrFormatter("%0.5lf"))
+                            ax.set_ylabel('Counts')
+                            ax.plot([x80[index]], [y80[index]],'rx', label=x80[index] * u.GHz)
+                        except Exception as e:
+                            print e
+                            print "Lorentz ", params
+                            pass
+            else:
+                print "No detections in scan %d..." % scan
+            fig = plt.gcf()
+            if (toscreen):
+                plt.show()
+            if (tofile):
+                if (not os.path.exists(path_save)):
+                    os.makedirs(path_save)
+                fig.savefig("%s/%s_scan_%d.png" % (path_save, filename, scan))
+            if(not toscreen):
+                plt.close()
         else:
-            plt.savefig(path)
+            print "This scan (%d) is not the first in the sequence" % scan
+
+        return (scan, result_detections)
+
+    def procseqn(self, scan):
+        data = self.data[np.where(self.data.field('SCAN') == scan)]
+        seqn = np.unique(data.field('PROCSEQN'))
+        return seqn[0]
+
+    def tsys(self, scan, plnum=0):
+        data = self.data[np.where((self.data.field('SCAN') == scan) & (self.data.field('SIG') == 'T') & (self.data.field('PLNUM')==plnum))]
+        calon = data[np.where((data.field('CAL') == 'T'))].field('DATA')
+        caloff = data[np.where((data.field('CAL') == 'F'))].field('DATA')
+        tcal = data.field('TCAL')[::2]
+        tsys = []
+        for i in range(len(calon)):
+            tsys_value = caloff[i] / (calon[i] - caloff[i]) * tcal[i]
+            tsys.append(np.mean(tsys_value))
+
+        return tsys
+
 
 
 ############################################ MAIN ########################################
